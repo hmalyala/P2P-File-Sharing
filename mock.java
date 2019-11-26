@@ -4,7 +4,7 @@ import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
 
-public class peer {
+public class mock {
 	Socket requestSocket;           //socket connect to the server
 	ObjectOutputStream out;         //stream write to the socket
  	ObjectInputStream in;          //stream read from the socket
@@ -18,7 +18,7 @@ public class peer {
     Set<String> my_chunks = new HashSet<String>();
 
 
-	peer(int client_num, int server_port) {
+	mock(int client_num, int server_port) {
         clientPath = clientPath + Integer.toString(client_num);
         File client = new File(clientPath);
         
@@ -30,8 +30,7 @@ public class peer {
         //create a socket to connect to the server
         try{
             requestSocket = new Socket("127.0.0.1", server_port);
-            System.out.println("Connected to localhost in port 8000");
-            connected = true;
+            System.out.println("---------Connected to localhost in port 8001---------------------------");
         }catch (ConnectException e) {
             showOptions("Connection refused. You need to initiate a server first. Please try again in the format: java peer <server port> <client port> <neighbour port>");
         } 
@@ -53,27 +52,11 @@ public class peer {
             sendMessage("giveMeListChunks");
             MESSAGE = (String)in.readObject();
             showOptions(MESSAGE);
+            //compare own my_chunks with the returned array and then call the below recursively for all files required
+            // teq_files= ["chunk_0", "chunk_1"]
+            queryForAChunkAndCreateIt("get:chunk_0");
             
-
-            if (MESSAGE.contains("total")){
-                this.total_chunks = Integer.parseInt(MESSAGE.split("total")[1]);
-                int numFiles = (int)Math.round(Math.ceil(this.total_chunks/5.0)); 
-                int end = (client_num+1)*numFiles;
-                for (int start = client_num*numFiles; start < end; start ++){
-                    if (start < this.total_chunks){
-                        //query for the file name
-                        try{
-                            queryForAChunkAndCreateIt("get:chunk_"+start);//("get:chunk_"+start);
-                            // Thread.sleep(100);
-                        }catch(Exception e){
-                            System.out.println("adsf");
-                        }
-                    
-                    }
-                    
-                }
-            }
-            System.out.println(MESSAGE);
+            
             
         } catch (ConnectException e) {
                 System.err.println("Connection refused. You need to initiate a server first.");
@@ -195,113 +178,10 @@ public class peer {
 		}
     }
     
-    private String getFileContent(String fileNmae){
-        File folder = new File(clientPath);
-        boolean fileFound = false;
-        newLine();
-        for (File myFile: folder.listFiles()){
-            if (myFile.getName().equals(fileNmae)){
-                fileFound = true;
-                byte [] mybytearray  = new byte [(int)myFile.length()];
-                try{
-                    InputStream fis = new FileInputStream(myFile);
-                    try{
-                        fis.read(mybytearray);
-                        System.out.println("Sending " + myFile.getName() + "(" + mybytearray.length + " bytes)");
-                        fis.close();
-                        out.writeObject(mybytearray.length);
-                        out.flush();
-                        
-                        System.out.println("sending buffer_size: " + mybytearray.length);
-
-                        out.write(mybytearray);
-                        out.flush();
-                    }catch(IOException ie){
-                        System.out.println("IO error");
-                    }
-                }catch(FileNotFoundException tne){
-                    System.out.print("error file not found-should not be printed ever");
-                }
-                break;
-            }
-        }
-        if (!fileFound){
-            sendMessage("requested file: " + fileNmae + " not found in server.");
-        }
-        newLine();
-        return "sent file";
-    }
-
-
-    String processMessage(String msg){
-        if (message.equals("giveMeListChunks")){
-            return my_chunks.toString();
-        }else if (message.contains("get:")){
-            String filename = message.split("get:")[1];
-            return getFileContent(filename);
-        }else{
-            return "unsupported operation";
-        }
-    }
-    
+   
+     
     // starte the server of client code
-    void startServer(int servePort){
-        ServerSocket listener = new ServerSocket(servePort);
-        System.out.println("The client " + client_num+ " is serving on " + servePort);
-        try {
-            while(true) {
-                
-                Socket connection = listener.accept();
-                //initialize Input and Output streams
-                try{
-					//initialize Input and Output streams
-					out = new ObjectOutputStream(connection.getOutputStream());
-					out.flush();
-					in = new ObjectInputStream(connection.getInputStream());
-					try{
-						while(true)
-						{
-							String message = (String)in.readObject();
-							//show the message to the user
-                            System.out.println("Received message: " + message);
-							
-                            String MESSAGE = processMessage(message);
-							if (!MESSAGE.equals("sent file") || !MESSAGE.equals("unsupported operation")){
-								sendMessage(MESSAGE, out);
-							}
-                            
-	
-						}
-					}
-					catch(ClassNotFoundException classnot){
-							System.err.println("Data received in unknown format");
-						}
-				}
-				catch(IOException ioException){
-					System.out.println("Disconnect with Client " + no);
-				}
-				finally{
-					//Close connections
-					try{
-						in.close();
-						out.close();
-						connection.close();
-					}
-					catch(IOException ioException){
-						System.out.println("Disconnect with Client " + no);
-					}
-				}
-			
-            }
-        } finally {
-            listener.close();
-        } 
-
-        
-    }
-
-    
-
+  
 	//main method
 	public static void main(String args[])
 	{
@@ -314,12 +194,12 @@ public class peer {
         }else{
 
             // peer client = new peer(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
-            peer client = new peer(0, 8000);
+            mock client = new mock(1, 8001);
 
             // client.run();
 
             //start two threads one for listening at a given port
-            client.startServer(8001);
+            // client.startServer(8001);
             // and one for serving at another port
             // connectToNeighbor(8002);
         }
