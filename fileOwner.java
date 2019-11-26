@@ -5,20 +5,19 @@ import java.nio.channels.*;
 import java.util.*;
 import org.apache.commons.io.FileUtils;
 
-public class ftpServer {
+public class fileOwner {
 
 	private static final int sPort = 8000;   //The server will be listening on this port number
 	private static Map<String, String> usPass = new HashMap<String,String>();//createMap();
-	static String folderPath = "server-folder";
+    static String folderPath = "server-folder";
+
 	
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("The server is running."); 
         	ServerSocket listener = new ServerSocket(sPort);
 			int clientNum = 1;
-			usPass.put("sid", "sid");
-			usPass.put("test", "test");
-			usPass.put("root", "root");
+			
             File serverFolder = new File(folderPath);
             
 			if (!serverFolder.exists()){
@@ -26,14 +25,51 @@ public class ftpServer {
             }
             //ToDo: copy the file from a static folder to serverFolder
 
-            var source = new File("~/Desktop/test.pdf");
-            var dest = new File("test.pdf");
+            // var source = new File("~/Desktop/test.pdf");
+            // var dest = new File("test.pdf");
             // FileUtils.copyFile(source, dest);
             //end of copy code
 
             //ToDo: split the test.pdf into smaller chunks of size 100kb and store them in 1.chunk, 2.chunk.. format 
+            var source = new File("test.pdf");
+            long f_size = source.length();
+            int counter = 0;
+            int offset = (int) f_size / 15;
 
+            byte[] mybytearray1 = new byte[(int) f_size];
+            try {
+                InputStream fis = new FileInputStream(source);
+                try {
+                    fis.read(mybytearray1);
+                    while (counter < 15) {
+                        File file = new File(serverFolder + "/chunk_" + counter);
+                        FileOutputStream out = new FileOutputStream(file);
+                        int min_limit = offset * counter;
+                        int max_limit = offset * (counter + 1);
+                        for (int i = 0; i < f_size; i++) {
+                            if (i >= min_limit && i <= max_limit) {
+                                out.write(mybytearray1[i]);
+                                out.flush();
+                            }
+                            if (i > max_limit) {
+                                break;
+                            }
+                        }
+                        counter++;
+                        out.close();
+                    }
+                    fis.close();
 
+                } catch (Exception e) {
+                    System.out.println("try 2 exception");
+                    e.printStackTrace();
+                }
+
+            } catch (Exception e) {
+                System.out.println("try 1 exception");
+                e.printStackTrace();
+            }
+            //-----------------------------spilt file end----------
             //Waiting for a new connection. Once connected need to get the client number(say 3) and give the client all chunks with filenames from clientNum*(totalNumFiles/5) to (clientNum + 1)*(totalNumFiles/5)
         	try {
             		while(true) {
@@ -143,16 +179,22 @@ public class ftpServer {
 				String retMessage = "In Progress";
 				if (x.length >= 1){
 					switch (x[0]){
-						case "usPass":
-							if(validateCreds(x[1])){
-								retMessage = "you can enter \n\t1. dir \n \t2. get <fileName> \n \t3. upload <fileName> \n\t4. exit";
-							}else{
-								retMessage = "Invalid Credentials, please contact support team";
-							}
-							break;
-						case "dir":
-							retMessage = getFileNames();
-							break;
+                        case "hi":
+                            int client_num = Integer.parseInt( x[1] );
+                            int totalNumFiles = new File("server-folder").listFiles().length;
+                            // getFilesForClient(clientNum);
+                            retMessage = "total"+ Integer.toString( totalNumFiles );
+                            break;
+						// case "usPass":
+						// 	if(validateCreds(x[1])){
+						// 		retMessage = "you can enter \n\t1. dir \n \t2. get <fileName> \n \t3. upload <fileName> \n\t4. exit";
+						// 	}else{
+						// 		retMessage = "Invalid Credentials, please contact support team";
+						// 	}
+						// 	break;
+						// case "dir":
+						// 	retMessage = getFileNames();
+						// 	break;
 						case "get":
 							if (x.length > 1){
 								retMessage = getFileContent(x[1]);
@@ -170,7 +212,8 @@ public class ftpServer {
 					}
 				}
 				return retMessage;
-			}
+            }
+            
 		
 
 			public void run() {
@@ -182,13 +225,16 @@ public class ftpServer {
 					try{
 						while(true)
 						{
-							message = (String)in.readObject();
+							String message = (String)in.readObject();
 							//show the message to the user
-							System.out.println("Received message: " + message + " from client " + no);
+                            System.out.println("Received message: " + message + " from client " + no);
+
 							MESSAGE = processMessage(message);
 							if (!MESSAGE.equals("sent file")){
 								sendMessage(MESSAGE);
 							}
+                            
+	
 						}
 					}
 					catch(ClassNotFoundException classnot){
