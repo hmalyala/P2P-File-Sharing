@@ -231,7 +231,7 @@ public class peer {
     }
 
 
-    String processMessage(String msg){
+    String processMessage(String message){
         if (message.equals("giveMeListChunks")){
             return my_chunks.toString();
         }else if (message.contains("get:")){
@@ -244,9 +244,10 @@ public class peer {
     
     // starte the server of client code
     void startServer(int servePort){
-        ServerSocket listener = new ServerSocket(servePort);
-        System.out.println("The client " + client_num+ " is serving on " + servePort);
+        
         try {
+            ServerSocket listener = new ServerSocket(servePort);
+            System.out.println("The client " + client_num+ " is serving on " + servePort);
             while(true) {
                 
                 Socket connection = listener.accept();
@@ -276,7 +277,7 @@ public class peer {
 						}
 				}
 				catch(IOException ioException){
-					System.out.println("Disconnect with Client " + no);
+					System.out.println("Disconnect with Client ");
 				}
 				finally{
 					//Close connections
@@ -286,13 +287,15 @@ public class peer {
 						connection.close();
 					}
 					catch(IOException ioException){
-						System.out.println("Disconnect with Client " + no);
+						System.out.println("Disconnect with Client ");
 					}
 				}
 			
             }
-        } finally {
-            listener.close();
+        } catch(Exception ioException){
+            System.out.println("Disconnect with Client ");
+        }finally {
+            // listener.close();
         } 
 
         
