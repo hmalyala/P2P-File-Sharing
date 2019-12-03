@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
-import org.apache.commons.io.FileUtils;
+// import org.apache.commons.io.FileUtils;
 
 public class fileOwner {
 
@@ -31,7 +31,7 @@ public class fileOwner {
             //end of copy code
 
             //ToDo: split the test.pdf into smaller chunks of size 100kb and store them in 1.chunk, 2.chunk.. format 
-            var source = new File("test.pdf");
+            var source = new File("test.rtf");
             long f_size = source.length();
             int counter = 0;
             int offset = (int) f_size / 15;
