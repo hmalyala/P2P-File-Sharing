@@ -31,7 +31,7 @@ public class fileOwner {
             //end of copy code
 
             //ToDo: split the test.pdf into smaller chunks of size 100kb and store them in 1.chunk, 2.chunk.. format 
-            var source = new File("test.rtf");
+            var source = new File("test1.pdf");
             long f_size = source.length();
             int counter = 0;
             int offset = (int) f_size / 15;
@@ -39,34 +39,21 @@ public class fileOwner {
             byte[] mybytearray1 = new byte[(int) f_size];
             try {
                 InputStream fis = new FileInputStream(source);
-                try {
-                    fis.read(mybytearray1);
-                    while (counter < 15) {
+                int i = 0;
+                    do {
+
+                        byte[] buf = new byte[102400];
+                        i = fis.read(buf);
+                        System.out.println("read "+i +" bytes");
                         File file = new File(serverFolder + "/chunk_" + counter);
                         FileOutputStream out = new FileOutputStream(file);
-                        int min_limit = offset * counter;
-                        int max_limit = offset * (counter + 1);
-                        for (int i = 0; i < f_size; i++) {
-                            if (i >= min_limit && i <= max_limit) {
-                                out.write(mybytearray1[i]);
-                                out.flush();
-                            }
-                            if (i > max_limit) {
-                                break;
-                            }
-                        }
+                        out.write(buf);
                         counter++;
-                        out.close();
-                    }
-                    fis.close();
-
-                } catch (Exception e) {
-                    System.out.println("try 2 exception");
-                    e.printStackTrace();
-                }
+                    } while (i != -1);
+                fis.close();
 
             } catch (Exception e) {
-                System.out.println("try 1 exception");
+                System.out.println("try 2 exception");
                 e.printStackTrace();
             }
             //-----------------------------spilt file end----------

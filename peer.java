@@ -115,7 +115,7 @@ public class peer {
             boolean fileFound = false;
             Object fileDetails = in.readObject();
             int buffer_size = 0;
-            System.out.println(">>>>>>>>>>>>"+fileDetails);
+            // System.out.println(">>>>>>>>>>>>"+fileDetails);
             try{
                 buffer_size = (int)fileDetails;
                 fileFound = true;
@@ -197,7 +197,7 @@ public class peer {
                     InputStream fis = new FileInputStream(myFile);
                     try{
                         fis.read(mybytearray);
-                        System.out.println("SERVER: Sending " + myFile.getName() + "(" + mybytearray.length + " bytes) to my neighbor");
+                        System.out.println("AS A SERVER: Sending " + myFile.getName() + "(" + mybytearray.length + " bytes) to my neighbor");
                         fis.close();
                         out.writeObject(mybytearray.length);
                         out.flush();
@@ -205,10 +205,10 @@ public class peer {
                         out.write(mybytearray);
                         out.flush();
                     }catch(IOException ie){
-                        System.out.println("SERVER: IO error");
+                        System.out.println("AS A SERVER: IO error");
                     }
                 }catch(FileNotFoundException tne){
-                    System.out.print("SERVER: error file not found-should not be printed ever");
+                    System.out.print("AS A SERVER: error file not found-should not be printed ever");
                 }
                 break;
             }
@@ -333,11 +333,12 @@ public class peer {
                 Object obj = neighIn.readObject();
                 // System.out.println(obj+">>>>>>>>>>>>>>>>>>>");
                 MESSAGE = (String)obj;
-                showOptions("ASKING neighbor for chunks and it returned: "+MESSAGE + " -- Comparing with own my_chunks: " + my_chunks.toString());
                 
                 //compare own my_chunks with the returned array and then call the below recursively for all files required
                 // teq_files= ["chunk_0", "chunk_1"]
                 List<String> chunks = Arrays.asList(MESSAGE.substring(1, MESSAGE.length() - 1).split(", "));
+                showOptions("ASKING neighbor for chunks and it returned chunk list of size: "+chunks.size() + " -- Comparing with own my_chunks of length: " + my_chunks.size());
+                
                 for (String chunk: chunks){
                     if (!my_chunks.contains(chunk)){
                         queryForAChunkAndCreateIt("get:"+chunk, neighIn ,neighOut);
@@ -347,10 +348,10 @@ public class peer {
                 Thread.sleep(1000);
             }
             //all chunks received and logic to reconstruct test.pdf
-            showOptions("-----------all chunks received----------------");
+            showOptions("             all chunks received and hence combining them to a single file            ");
             int counter = 0;
 
-		File f = new File(clientPath + "/output.rtf");
+		File f = new File(clientPath + "/outputPdf");
 		// f.createNewFile();
 		FileOutputStream fileOutput = new FileOutputStream(f);
 		while (counter < total_chunks) {
