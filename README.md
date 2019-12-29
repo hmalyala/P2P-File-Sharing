@@ -14,7 +14,7 @@ chunks to this peer.
 1. Start the server through $java fileOwner <port number>
 2. Start the peers through $java peer <port number #1> <port number #2>
 
-Each peer should be run on a separate terminal. We can observe the logs on the terminal as the peer starts the file transfer.
+Each peer should be run on a separate terminal. We can observe the logs on the terminal as soon as a peer starts the file transfer.
 Once it has received all the chunks, it reconstructs the file and displays the message on the terminal.
 
 
